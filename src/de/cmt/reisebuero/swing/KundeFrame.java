@@ -5,6 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,6 +24,8 @@ import javax.swing.JTextField;
 
 import de.cmt.reisebuero.core.exception.InvalidAttributeValueException;
 import de.cmt.reisebuero.core.kunde.Kunde;
+import de.cmt.reisebuero.core.kunde.KundeSqlHelper;
+import de.cmt.reisebuero.swing.db.DbHelper;
 
 public class KundeFrame {
 
@@ -170,14 +175,10 @@ public class KundeFrame {
 
 		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				textVorname.setText("");
-				textNachname.setText("");
-				textBenutzername.setText("");
-				textPasswort.setText("");
-				textPlz.setText("");
-				textGeburtsdatum.setText("01.01.1980");
-				selectStatus.setSelectedItem(1);
+				reset(textGeburtsdatum, selectStatus);
 			}
+
+			
 		});
 		
 		btnNewButton.addActionListener(new ActionListener() {
@@ -200,8 +201,7 @@ public class KundeFrame {
 				k.setBenutzername(textBenutzername.getText());
 				
 				String geburtsDatum = textGeburtsdatum.getText();
-				
-				
+								
 				try {
 					SimpleDateFormat sf = new SimpleDateFormat("dd.MM.yyyy");
 					
@@ -225,11 +225,32 @@ public class KundeFrame {
 				KundeStateModel ksm = (KundeStateModel) selectStatus.getSelectedItem();
 				k.setState(ksm.getValue());
 				
+				Connection con = DbHelper.get();
 				
+				try {
+					KundeSqlHelper.create(con, k);
+				} catch (SQLException e1) {
+					JOptionPane.showMessageDialog(null, "Creating customer failed");
+
+					return;
+				}
+				
+				reset(textGeburtsdatum, selectStatus);
+				frmNeuerKunde.setVisible(false);
 			}
 		});
 	}
 
+	private void reset(JFormattedTextField textGeburtsdatum, JComboBox selectStatus) {
+		textVorname.setText("");
+		textNachname.setText("");
+		textBenutzername.setText("");
+		textPasswort.setText("");
+		textPlz.setText("");
+		textGeburtsdatum.setText("01.01.1980");
+		selectStatus.setSelectedItem(1);
+	}
+	
 	public JFrame getFrmNeuerKunde() {
 		return frmNeuerKunde;
 	}

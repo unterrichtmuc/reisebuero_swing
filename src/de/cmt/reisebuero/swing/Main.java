@@ -96,12 +96,18 @@ public class Main {
 		JMenuItem mnitNeuKunde = new JMenuItem("Neuer Kunde");
 		mnitNeuKunde.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				System.out.println("Kunde anlegen");
+				System.out.println("Kunde anlegen");							
 				
-				KundeFrame kf = new KundeFrame();
+				// Singleton (Damit nur einmal geladen wird)
+				if (kf == null) {
+					 kf = new KundeFrame();
+				}
+								
 				kf.getFrmNeuerKunde().setVisible(true);
 			}
 		});
 		mnKunde.add(mnitNeuKunde);
 	}
+	
+	KundeFrame kf = null;
 }
