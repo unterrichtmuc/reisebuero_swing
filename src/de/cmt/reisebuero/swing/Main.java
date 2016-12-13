@@ -1,21 +1,26 @@
 package de.cmt.reisebuero.swing;
 
 import java.awt.EventQueue;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.swing.JFrame;
-import javax.swing.JTabbedPane;
-import java.awt.BorderLayout;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.BoxLayout;
-import java.awt.Component;
-import java.awt.GridLayout;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.JMenuBar;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+
+import de.cmt.reisebuero.core.exception.InvalidAttributeValueException;
+import de.cmt.reisebuero.core.kunde.Kunde;
+import de.cmt.reisebuero.core.kunde.KundeSqlHelper;
+import de.cmt.reisebuero.swing.db.DbHelper;
 
 public class Main {
 
@@ -43,8 +48,24 @@ public class Main {
 	 */
 	public Main() {
 		initialize();
+		loadKunden();
 	}
 
+	private void loadKunden() {
+		Connection con = DbHelper.get();
+		
+		try {
+			Kunde[] kunden = KundeSqlHelper.getKunden(con, KundeSqlHelper.ALL_KUNDEN);
+			
+			System.out.println(kunden[0].getNachname());
+		} catch (SQLException | InvalidAttributeValueException e) {
+			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Loading failed");
+			e.printStackTrace();
+		}
+	}
+	
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */
