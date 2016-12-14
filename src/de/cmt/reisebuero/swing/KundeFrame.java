@@ -22,7 +22,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import de.cmt.reisebuero.core.exception.InvalidAttributeValueException;
 import de.cmt.reisebuero.core.kunde.Kunde;
 import de.cmt.reisebuero.core.kunde.KundeSqlHelper;
 import de.cmt.reisebuero.swing.db.DbHelper;
@@ -35,6 +34,8 @@ public class KundeFrame {
 	private JTextField textBenutzername;
 	private JTextField textPasswort;
 	private JTextField textPlz;
+	
+	private Kunde kunde = null;
 
 	/**
 	 * Launch the application.
@@ -57,6 +58,13 @@ public class KundeFrame {
 	 */
 	public KundeFrame() {
 		initialize();
+	}
+	
+	public KundeFrame(Kunde k) {
+		initialize();
+		frmNeuerKunde.setTitle("Edit Kunde " + k.getNachname());
+		textNachname.setText(k.getNachname());
+		this.kunde = k;
 	}
 
 	/**
@@ -190,8 +198,15 @@ public class KundeFrame {
 				Kunde k = null;
 
 				try {
-					k = new Kunde(nachname);
-				} catch (InvalidAttributeValueException e2) {
+					if (kunde == null) {
+						k = new Kunde(nachname);
+					}
+					else
+					{
+						k = kunde;
+					}
+					
+				} catch (Exception e2) {
 					JOptionPane.showMessageDialog(frmNeuerKunde, "Zu kurzer Nachname", "Fehler", JOptionPane.ERROR_MESSAGE);
 					
 					return;
@@ -228,7 +243,12 @@ public class KundeFrame {
 				Connection con = DbHelper.get();
 				
 				try {
-					KundeSqlHelper.create(con, k);
+					if (kunde == null) {
+						KundeSqlHelper.create(con, k);
+					} else {
+						
+					}
+					
 				} catch (SQLException e1) {
 					JOptionPane.showMessageDialog(null, "Creating customer failed");
 

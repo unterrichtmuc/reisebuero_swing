@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -17,15 +18,17 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import de.cmt.reisebuero.core.exception.InvalidAttributeValueException;
 import de.cmt.reisebuero.core.kunde.Kunde;
 import de.cmt.reisebuero.core.kunde.KundeSqlHelper;
 import de.cmt.reisebuero.swing.db.DbHelper;
+import javax.swing.JScrollPane;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Main {
 
 	private JFrame frmReisebroManager;
-	private JTable table;
+	private JTable table_kunden;
 
 	/**
 	 * Launch the application.
@@ -56,9 +59,34 @@ public class Main {
 		
 		try {
 			Kunde[] kunden = KundeSqlHelper.getKunden(con, KundeSqlHelper.ALL_KUNDEN);
+			DefaultTableModel tm = new DefaultTableModel() {
+				 public boolean isCellEditable(int row, int column) {
+				        return false;
+				 }
+			};
+
+			String[] columns = {"Id", "Vorname", "Nachname", "Benutzername", "Geburtsdatum", "Status"};
 			
-			System.out.println(kunden[0].getNachname());
-		} catch (SQLException | InvalidAttributeValueException e) {
+			Object[][] kundenData = new Object[kunden.length][6];
+			SimpleDateFormat sf = new SimpleDateFormat("dd.MM.yyyy");
+			
+			for (int i = 0; i < kunden.length; i++)
+			{
+				// Der gesamte Kunde
+				kundenData[i][0] = kunden[i];
+				
+				kundenData[i][1] = kunden[i].getVorname();
+				kundenData[i][2] = kunden[i].getNachname();
+				kundenData[i][3] = kunden[i].getBenutzername();
+				kundenData[i][4] = sf.format(kunden[i].getGeburtsdatum());
+				kundenData[i][5] = kunden[i].getState();
+			}			
+			
+			tm.setDataVector(kundenData, columns);
+			table_kunden.setModel(tm);
+			table_kunden.repaint();
+			
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			JOptionPane.showMessageDialog(null, "Loading failed");
 			e.printStackTrace();
@@ -84,8 +112,33 @@ public class Main {
 		tabbedPane.addTab("Kunden", null, panel, null);
 		panel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		table = new JTable();
-		table.setModel(new DefaultTableModel(
+		JScrollPane scrollPane = new JScrollPane();
+		panel.add(scrollPane);
+		
+		table_kunden = new JTable();
+		table_kunden.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if (arg0.getClickCount() < 2) {					
+					return;
+				}
+				
+				int zeile = table_kunden.getSelectedRow();
+				System.out.println(zeile);
+				
+				// Kunde! 
+				Kunde k = (Kunde) table_kunden.getModel().getValueAt(zeile, 0);
+				
+				System.out.println(k.getNachname());
+				
+				KundeFrame km = new KundeFrame(k);
+				km.getFrmNeuerKunde().setVisible(true);
+				
+			}
+		});
+		table_kunden.setFillsViewportHeight(true);
+		scrollPane.setRowHeaderView(table_kunden);
+		table_kunden.setModel(new DefaultTableModel(
 			new Object[][] {
 				{null, null, null, null, null},
 				{null, null, null, null, null},
@@ -96,7 +149,6 @@ public class Main {
 				"New column", "New column", "New column", "New column", "New column"
 			}
 		));
-		panel.add(table);
 		
 		JPanel panel_1 = new JPanel();
 		tabbedPane.addTab("Reisen", null, panel_1, null);
